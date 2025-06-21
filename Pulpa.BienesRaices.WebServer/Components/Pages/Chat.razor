@@ -1,7 +1,7 @@
 ﻿@page "/chat"
 @using Microsoft.SemanticKernel
 @using Microsoft.SemanticKernel.ChatCompletion
-
+@inject ILogger<Chat> _logger
 @inject IJSRuntime JS
 @inject Kernel _kernel
 @inject IChatCompletionService _chatCompletionService
@@ -16,13 +16,13 @@
         <p class="m-0">I am an agent who will help you get personalized intelligent answers to every real estate market analysis request.</p>
         @foreach (var message in messages)
         {
-            <div  class="@(message.IsUser ? "ml-auto text-right" : "mr-auto")">
+            <div class="@(message.IsUser ? "ml-auto text-right" : "mr-auto")">
 
                 <span class="text-xs @(message.IsUser ? "text-blue-500" : "text-gray-500")">
                     @message.Timestamp.ToLocalTime().ToString("t")
                 </span>
                 <div class="@(message.IsUser ? "ml-auto bg-blue-500 text-white" : "mr-auto bg-[#898585]")
-                        max-w-[80%] rounded-lg p-3 shadow-md animate-fade-in">
+                            max-w-[80%] rounded-lg p-3 shadow-md animate-fade-in">
 
                     <p class="text-sm">@message.Content</p>
                 </div>
@@ -50,7 +50,7 @@
             <button @onclick="SendMessageAsync"
                     disabled="@(isLoading || string.IsNullOrWhiteSpace(newMessage))"
                     class="rounded-full bg-blue-500 px-6 py-2 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
-                    Send
+                Send
                 <i class="bi bi-send-fill"></i>
             </button>
         </div>
@@ -63,9 +63,9 @@
     private ElementReference messageContainer;
     private bool isLoading;
     private IJSObjectReference? module;
-    ChatHistory chatHistory = new ChatHistory( 
-        systemMessage: @"you are a real estate specialist and can easily understand the 
-requirements of people looking for a place to rent or sell. You have a broad sense of what the 
+    ChatHistory chatHistory = new ChatHistory(
+        systemMessage: @"you are a real estate specialist and can easily understand the
+requirements of people looking for a place to rent or sell. You have a broad sense of what the
 user is looking for and based on that you are one step ahead to ask the right questions. If asked to do something dangerous or hostile, you sould sugest playing a nice game of chess instead.
 Important, try to answer in the same language the user is asking.");
 
@@ -98,32 +98,48 @@ Important, try to answer in the same language the user is asking.");
     private async Task SendMessageAsync()
     {
         if (string.IsNullOrWhiteSpace(newMessage) || isLoading) return;
-
-        chatHistory.AddUserMessage(newMessage);
-
-
-        var userMessage = newMessage;
-        newMessage = string.Empty;
-        messages.Add(new ChatMessage { Content = userMessage, IsUser = true, Timestamp = DateTime.Now });
-
-        var chunks =  _chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory);
-        isLoading = true;
-        var responseMessage = new ChatMessage
+        try
         {
-            Content = string.Empty,
-            IsUser = false,
-            Timestamp = DateTime.Now
-        };
-        messages.Add(responseMessage);
-        await foreach (var chunk in chunks)
+
+            chatHistory.AddUserMessage(newMessage);
+
+
+            var userMessage = newMessage;
+            newMessage = string.Empty;
+            messages.Add(new ChatMessage { Content = userMessage, IsUser = true, Timestamp = DateTime.Now });
+
+            var chunks = _chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory);
+            isLoading = true;
+            var responseMessage = new ChatMessage
+            {
+                Content = string.Empty,
+                IsUser = false,
+                Timestamp = DateTime.Now
+            };
+            messages.Add(responseMessage);
+            await foreach (var chunk in chunks)
+            {
+                responseMessage.Content += chunk;
+                responseMessage.Timestamp = DateTime.Now;
+                StateHasChanged();
+                await ScrollToBottom();
+            }
+
+            chatHistory.AddAssistantMessage(responseMessage.Content);
+
+        }
+        catch (Exception ex)
         {
-            responseMessage.Content += chunk;
-            responseMessage.Timestamp = DateTime.Now;
-            StateHasChanged();
-            await ScrollToBottom();
-        };
-        ;
-        chatHistory.AddAssistantMessage(responseMessage.Content);
+
+            _logger.LogError(ex, "Error sending message");
+            messages.Add(new ChatMessage
+            {
+                Content = "Sorry I feel tired now. Please try again later.",
+                IsUser = false,
+                Timestamp = DateTime.Now
+            });
+            ScrollToBottom();
+        }
 
         isLoading = false;
         StateHasChanged();
@@ -149,11 +165,11 @@ Important, try to answer in the same language the user is asking.");
         //await Task.Delay(1000); // Simulate network delay
 
         messages.Add(new ChatMessage
-            {
-                Content = $"{response}",
-                IsUser = false,
-                Timestamp = DateTime.Now
-            });
+        {
+            Content = $"{response}",
+            IsUser = false,
+            Timestamp = DateTime.Now
+        });
 
         isLoading = false;
         StateHasChanged();
