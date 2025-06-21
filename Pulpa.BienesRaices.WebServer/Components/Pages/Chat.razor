@@ -4,7 +4,7 @@
 @using Pulpa.BienesRaices.WebServer.Models
 <PageTitle>Chat</PageTitle>
 
-<div class="flex flex-col h-[80vh] bg-gray-100">
+<div class="flex flex-col h-[80vh] bg-gray-100 content">
     <!-- Chat messages container -->
     <div @ref="messageContainer" class="flex-1 overflow-y-auto p-4 space-y-4">
         <h2 class="text-2xl">How can I help you today?</h2>
@@ -16,7 +16,7 @@
                 <span class="text-xs @(message.IsUser ? "text-blue-500" : "text-gray-500")">
                     @message.Timestamp.ToLocalTime().ToString("t")
                 </span>
-                <div class="@(message.IsUser ? "ml-auto bg-blue-500 text-white" : "mr-auto bg-white")
+                <div class="@(message.IsUser ? "ml-auto bg-blue-500 text-white" : "mr-auto bg-[#898585]")
                         max-w-[80%] rounded-lg p-3 shadow-md animate-fade-in">
 
                     <p class="text-sm">@message.Content</p>
@@ -34,7 +34,7 @@
     </div>
 
     <!-- Input container -->
-    <div class="border-t border-gray-200 bg-white p-4 sticky bottom-0">
+    <div class="content border-t border-gray-200 bg-white p-4 sticky bottom-0">
         <div class="flex space-x-4 items-center max-w-4xl mx-auto">
             <input @bind="newMessage"
                    @bind:event="oninput"

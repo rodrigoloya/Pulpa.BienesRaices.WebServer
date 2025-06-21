@@ -1,23 +1,27 @@
 ﻿@inherits LayoutComponentBase
-
-<div class="page flex flex-row h-screen">
-    <div class="sidebar bg-gradient-to-b from-blue-900 to-purple-900 transition-all duration-300 ease-in-out relative"
-         >
+ 
+<div id="app-container" class="page flex flex-row h-screen transition-all duration-500">
+    <div class="sidebar bg-gradient-to-b from-blue-900 to-purple-900 transition-all duration-300 ease-in-out relative">
         <button id="btnToggle"
-                class="absolute top-2 right-2 z-10 bg-white/80 hover:bg-blue-600 text-blue-900 hover:text-white rounded-full m-2  p-2 transition-colors duration-300 ease-in-out focus:outline-none"
+                class="absolute top-2 right-2 z-10 bg-white/80 hover:bg-blue-600 text-blue-900 hover:text-white rounded-full m-2 p-2 transition-colors duration-300 ease-in-out focus:outline-none"
                 aria-label="Toggle sidebar">
             <i class="bi bi-layout-sidebar text-white"></i>
         </button>
-        <div class="nav-menu overflow-hidden transition-all duration-300 ease-in-out" >
+        <div class="nav-menu overflow-hidden transition-all duration-300 ease-in-out">
             <NavMenu />
         </div>
     </div>
 
     <main class="flex-1 flex flex-col">
-        <div class="top-row px-4">
-            
+        <div id="theme-toggle" class="top-row px-4 flex justify-end items-center">
+            <button id="btn-theme-toggle" class="theme-button bg-gray-200 hover:bg-gray-300" aria-label="Toggle dark/light mode">
+                <i class="bi bi-moon moon-icon me-2"></i>
+                <i class="bi bi-sun sun-icon me-2"></i>
+                <span class="text-sm moon-icon">Dark mode</span>
+                <span class="text-sm sun-icon">Light mode</span>
+            </button>
         </div>
-        <article class="px-4">
+        <article class="px-4 transition-colors duration-300">
             @Body
         </article>
     </main>
@@ -29,15 +33,36 @@
     <span class="dismiss">🗙</span>
 </div>
 
- 
 <script>
+    // Sidebar toggle functionality
     document.getElementById("btnToggle")
-        .addEventListener("click", function () {
+        .addEventListener("click", function() {
             const sidebar = document.querySelector(".sidebar");
             const nav = document.querySelector(".nav-menu");
             sidebar.classList.toggle("collapsed");
             nav.classList.toggle("collapsed");
-           
-            console.log("Sidebar toggled:", sidebar.classList.contains("collapsed"));
         });
+
+     const themeToggleBtn = document.getElementById('btn-theme-toggle');
+        if (themeToggleBtn) {
+            themeToggleBtn.addEventListener('click', function() {
+                // Toggle dark class on html element
+                const isDark = document.documentElement.classList.toggle('dark');
+
+                // Save preference to localStorage
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            });
+        }
+        // Theme toggle functionality
+    document.addEventListener("DOMContentLoaded", function () {
+        console.log('DOM fully loaded and parsed');
+        // Check for saved theme preference or prefer-color-scheme
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            document.documentElement.classList.add('dark');
+        }
+
+    });
 </script>
