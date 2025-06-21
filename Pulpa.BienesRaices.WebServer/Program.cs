@@ -6,6 +6,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+builder.Services.AddKernel();
+
+var aiConfig = builder.Configuration.GetSection("SmartComponents");
+builder.Services.AddOpenAIChatClient(aiConfig["DeploymentName"] ?? string.Empty, aiConfig["ApiKey"] ?? string.Empty);
+ 
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

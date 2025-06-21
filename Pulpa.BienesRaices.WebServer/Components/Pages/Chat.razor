@@ -1,6 +1,9 @@
 ﻿@page "/chat"
 @inject IJSRuntime JS
+@inject Kernel Kernel
+
 @rendermode InteractiveServer
+@using Microsoft.SemanticKernel
 @using Pulpa.BienesRaices.WebServer.Models
 <PageTitle>Chat</PageTitle>
 
@@ -71,8 +74,8 @@
                                 ./Components/Pages/JsCollocation2.razor.js (.NET 8 or later)
                                 ./Pages/JsCollocation2.razor.js (.NET 7 or earlier)
                             */
-            module = await JS.InvokeAsync<IJSObjectReference>("import",
-                "./chat.js");
+        module = await JS.InvokeAsync<IJSObjectReference>("import",
+            "./chat.js");
         }
 
     }
@@ -98,12 +101,16 @@
         // Simulate AI response with loading state
         isLoading = true;
         StateHasChanged();
-        await Task.Delay(1000); // Simulate network delay
+
+        var response = await Kernel.InvokePromptAsync<string>(userMessage);
+
+        //await Task.Delay(1000); // Simulate network delay
 
         messages.Add(new ChatMessage
             {
-                Content = $"Echo: {userMessage}",
-                IsUser = false
+            Content = $"{response}",
+            IsUser = false,
+            Timestamp = DateTime.Now
             });
 
         isLoading = false;
