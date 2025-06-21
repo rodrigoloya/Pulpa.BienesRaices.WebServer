@@ -1,13 +1,13 @@
 ﻿@inherits LayoutComponentBase
  
 <div id="app-container" class="page flex flex-row h-screen transition-all duration-500">
-    <div class="sidebar bg-gradient-to-b from-blue-900 to-purple-900 transition-all duration-300 ease-in-out relative">
+    <div class="sidebar collapsed bg-gradient-to-b from-blue-900 to-purple-900 transition-all duration-300 ease-in-out relative">
         <button id="btnToggle"
                 class="absolute top-2 right-2 z-10 bg-white/80 hover:bg-blue-600 text-blue-900 hover:text-white rounded-full m-2 p-2 transition-colors duration-300 ease-in-out focus:outline-none"
                 aria-label="Toggle sidebar">
             <i class="bi bi-layout-sidebar text-white"></i>
         </button>
-        <div class="nav-menu overflow-hidden transition-all duration-300 ease-in-out">
+        <div class="nav-menu overflow-hidden transition-all duration-300 ease-in-out collapsed">
             <NavMenu />
         </div>
     </div>
@@ -21,7 +21,7 @@
                 <span class="text-sm sun-icon">Light mode</span>
             </button>
         </div>
-        <article class="px-4 transition-colors duration-300">
+        <article class="transition-colors duration-300">
             @Body
         </article>
     </main>

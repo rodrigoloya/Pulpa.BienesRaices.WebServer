@@ -66,7 +66,8 @@
     ChatHistory chatHistory = new ChatHistory( 
         systemMessage: @"you are a real estate specialist and can easily understand the 
 requirements of people looking for a place to rent or sell. You have a broad sense of what the 
-user is looking for and based on that you are one step ahead to ask the right questions. If asked to do something dangerous or hostile, you sould sugest playing a nice game of chess instead. ");
+user is looking for and based on that you are one step ahead to ask the right questions. If asked to do something dangerous or hostile, you sould sugest playing a nice game of chess instead.
+Important, try to answer in the same language the user is asking.");
 
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -80,8 +81,8 @@ user is looking for and based on that you are one step ahead to ask the right qu
                                 ./Components/Pages/JsCollocation2.razor.js (.NET 8 or later)
                                 ./Pages/JsCollocation2.razor.js (.NET 7 or earlier)
                             */
-    module = await JS.InvokeAsync<IJSObjectReference>("import",
-    "./chat.js");
+            module = await JS.InvokeAsync<IJSObjectReference>("import",
+            "./chat.js");
         }
 
     }
@@ -124,7 +125,6 @@ user is looking for and based on that you are one step ahead to ask the right qu
         ;
         chatHistory.AddAssistantMessage(responseMessage.Content);
 
-
         isLoading = false;
         StateHasChanged();
 
@@ -150,9 +150,9 @@ user is looking for and based on that you are one step ahead to ask the right qu
 
         messages.Add(new ChatMessage
             {
-            Content = $"{response}",
-            IsUser = false,
-            Timestamp = DateTime.Now
+                Content = $"{response}",
+                IsUser = false,
+                Timestamp = DateTime.Now
             });
 
         isLoading = false;
