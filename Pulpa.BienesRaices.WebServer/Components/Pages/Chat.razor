@@ -1,10 +1,12 @@
 ﻿@page "/chat"
+@using Microsoft.SemanticKernel
+@using Microsoft.SemanticKernel.ChatCompletion
+
 @inject IJSRuntime JS
 @inject Kernel Kernel
-
+@inject IChatCompletionService ChatCompletionService
 @rendermode InteractiveServer
-@using Microsoft.SemanticKernel
-@using Pulpa.BienesRaices.WebServer.Models
+
 <PageTitle>Chat</PageTitle>
 
 <div class="flex flex-col h-[80vh] bg-gray-100 content">
@@ -45,7 +47,7 @@
                    disabled="@isLoading"
                    class="flex-1 rounded-full border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors disabled:bg-gray-100"
                    placeholder="Type a message..." />
-            <button @onclick="SendMessage"
+            <button @onclick="SendMessageAsync"
                     disabled="@(isLoading || string.IsNullOrWhiteSpace(newMessage))"
                     class="rounded-full bg-blue-500 px-6 py-2 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
                     Send
@@ -61,6 +63,7 @@
     private ElementReference messageContainer;
     private bool isLoading;
     private IJSObjectReference? module;
+    ChatHistory chatHistory = new ChatHistory();
 
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -74,8 +77,8 @@
                                 ./Components/Pages/JsCollocation2.razor.js (.NET 8 or later)
                                 ./Pages/JsCollocation2.razor.js (.NET 7 or earlier)
                             */
-        module = await JS.InvokeAsync<IJSObjectReference>("import",
-            "./chat.js");
+    module = await JS.InvokeAsync<IJSObjectReference>("import",
+    "./chat.js");
         }
 
     }
@@ -84,8 +87,44 @@
     {
         if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(newMessage) && !isLoading)
         {
-            await SendMessage();
+            await SendMessageAsync();
         }
+    }
+
+    private async Task SendMessageAsync()
+    {
+        if (string.IsNullOrWhiteSpace(newMessage) || isLoading) return;
+
+        chatHistory.AddUserMessage(newMessage);
+
+
+        var userMessage = newMessage;
+        newMessage = string.Empty;
+        messages.Add(new ChatMessage { Content = userMessage, IsUser = true, Timestamp = DateTime.Now });
+
+        var chunks =  Kernel.InvokePromptStreamingAsync<string>(userMessage);
+        isLoading = true;
+        var responseMessage = new ChatMessage
+        {
+            Content = string.Empty,
+            IsUser = false,
+            Timestamp = DateTime.Now
+        };
+        messages.Add(responseMessage);
+        await foreach (var chunk in chunks)
+        {
+            responseMessage.Content += chunk;
+            responseMessage.Timestamp = DateTime.Now;
+            StateHasChanged();
+            await ScrollToBottom();
+        };
+        ;
+        chatHistory.AddAssistantMessage(responseMessage.Content);
+
+
+        isLoading = false;
+        StateHasChanged();
+
     }
 
     private async Task SendMessage()
