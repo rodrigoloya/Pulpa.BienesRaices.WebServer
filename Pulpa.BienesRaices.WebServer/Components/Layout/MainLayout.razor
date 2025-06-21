@@ -1,15 +1,22 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
+<div class="page flex flex-row h-screen">
+    <div class="sidebar bg-gradient-to-b from-blue-900 to-purple-900 transition-all duration-300 ease-in-out relative"
+         >
+        <button id="btnToggle"
+                class="absolute top-2 right-2 z-10 bg-white/80 hover:bg-blue-600 text-blue-900 hover:text-white rounded-full m-2  p-2 transition-colors duration-300 ease-in-out focus:outline-none"
+                aria-label="Toggle sidebar">
+            <i class="bi bi-layout-sidebar text-white"></i>
+        </button>
+        <div class="nav-menu overflow-hidden transition-all duration-300 ease-in-out" >
+            <NavMenu />
+        </div>
     </div>
 
-    <main>
+    <main class="flex-1 flex flex-col">
         <div class="top-row px-4">
-             
+            
         </div>
-
         <article class="px-4">
             @Body
         </article>
@@ -21,3 +28,16 @@
     <a href="." class="reload">Reload</a>
     <span class="dismiss">🗙</span>
 </div>
+
+ 
+<script>
+    document.getElementById("btnToggle")
+        .addEventListener("click", function () {
+            const sidebar = document.querySelector(".sidebar");
+            const nav = document.querySelector(".nav-menu");
+            sidebar.classList.toggle("collapsed");
+            nav.classList.toggle("collapsed");
+           
+            console.log("Sidebar toggled:", sidebar.classList.contains("collapsed"));
+        });
+</script>
