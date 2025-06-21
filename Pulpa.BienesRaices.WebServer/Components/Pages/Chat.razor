@@ -3,8 +3,8 @@
 @using Microsoft.SemanticKernel.ChatCompletion
 
 @inject IJSRuntime JS
-@inject Kernel Kernel
-@inject IChatCompletionService ChatCompletionService
+@inject Kernel _kernel
+@inject IChatCompletionService _chatCompletionService
 @rendermode InteractiveServer
 
 <PageTitle>Chat</PageTitle>
@@ -63,7 +63,10 @@
     private ElementReference messageContainer;
     private bool isLoading;
     private IJSObjectReference? module;
-    ChatHistory chatHistory = new ChatHistory();
+    ChatHistory chatHistory = new ChatHistory( 
+        systemMessage: @"you are a real estate specialist and can easily understand the 
+requirements of people looking for a place to rent or sell. You have a broad sense of what the 
+user is looking for and based on that you are one step ahead to ask the right questions. If asked to do something dangerous or hostile, you sould sugest playing a nice game of chess instead. ");
 
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -102,7 +105,7 @@
         newMessage = string.Empty;
         messages.Add(new ChatMessage { Content = userMessage, IsUser = true, Timestamp = DateTime.Now });
 
-        var chunks =  Kernel.InvokePromptStreamingAsync<string>(userMessage);
+        var chunks =  _chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory);
         isLoading = true;
         var responseMessage = new ChatMessage
         {
@@ -141,7 +144,7 @@
         isLoading = true;
         StateHasChanged();
 
-        var response = await Kernel.InvokePromptAsync<string>(userMessage);
+        var response = await _kernel.InvokePromptAsync<string>(userMessage);
 
         //await Task.Delay(1000); // Simulate network delay
 

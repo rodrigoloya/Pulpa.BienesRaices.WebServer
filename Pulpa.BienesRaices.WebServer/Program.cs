@@ -1,3 +1,4 @@
+using Microsoft.SemanticKernel; 
 using Pulpa.BienesRaices.WebServer.Components;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -6,11 +7,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-builder.Services.AddKernel();
+builder.Services.AddKernel(); 
 
 var aiConfig = builder.Configuration.GetSection("SmartComponents");
-builder.Services.AddOpenAIChatClient(aiConfig["DeploymentName"] ?? string.Empty, aiConfig["ApiKey"] ?? string.Empty);
- 
+//builder.Services.AddOpenAIChatClient(aiConfig["DeploymentName"] ?? string.Empty, aiConfig["ApiKey"] ?? string.Empty);
+builder.Services.AddOpenAIChatCompletion(
+    modelId: aiConfig["DeploymentName"] ?? string.Empty,
+    apiKey: aiConfig["ApiKey"] ?? string.Empty
+  );  
 
 var app = builder.Build();
 
