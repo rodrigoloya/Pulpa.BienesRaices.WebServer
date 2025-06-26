@@ -8,8 +8,8 @@
 @rendermode InteractiveServer
 
 <PageTitle>Chat</PageTitle>
-
-<div class="flex flex-col h-[80vh] bg-gray-100 content">
+<PropertyForm IsVisible="@FormIsVisible"></PropertyForm>
+<div class="flex flex-col h-[89vh] bg-gray-100 content">
     <!-- Chat messages container -->
     <div @ref="messageContainer" class="flex-1 overflow-y-auto p-4 space-y-4">
         <h2 class="text-2xl">How can I help you today?</h2>
@@ -22,7 +22,7 @@
                     @message.Timestamp.ToLocalTime().ToString("t")
                 </span>
                 <div class="@(message.IsUser ? "ml-auto bg-blue-500 text-white" : "mr-auto bg-[#898585]")
-                            max-w-[80%] rounded-lg p-3 shadow-md animate-fade-in">
+                                max-w-[80%] rounded-lg p-3 shadow-md animate-fade-in">
 
                     <p class="text-sm">@message.Content</p>
                 </div>
@@ -54,6 +54,12 @@
                 <i class="bi bi-send-fill"></i>
             </button>
         </div>
+         
+            <input type="hidden" id="PreFilledData" name="PreFilledData" @bind="PreFilledData" />
+            <div class="d-flex align-items-center justify-content-center mt-3">
+                <button @onclick="ShowForm"  class="btn btn-success">Continuar</button>
+            </div>
+        
     </div>
 </div>
 
@@ -63,11 +69,38 @@
     private ElementReference messageContainer;
     private bool isLoading;
     private IJSObjectReference? module;
+    private string PreFilledData = string.Empty;
+    private bool FormIsVisible = false;
+
     ChatHistory chatHistory = new ChatHistory(
         systemMessage: @"you are a real estate specialist and can easily understand the
-requirements of people looking for a place to rent or sell. You have a broad sense of what the
-user is looking for and based on that you are one step ahead to ask the right questions. If asked to do something dangerous or hostile, you sould sugest playing a nice game of chess instead.
-Important, try to answer in the same language the user is asking.");
+requirements of people looking for a place to rent, buy or sell. If asked to do something dangerous or hostile, you sould sugest playing a nice game of chess instead.
+Important, try to answer in the same language the user is asking. Your goal is to ask clear, concise questions to gather all the information required for the following fields:
+•	Property Type (House, Apartment, Office, Commercial, Land)
+•	Listing Type (Rent, Sale)
+•	Neighborhood (text)
+•	City (text)
+•	State (text)
+•	Postal Code (text)
+•	Bedrooms (number, optional)
+•	Bathrooms (number, optional)
+•	Area in square meters (number, optional)
+•	Stories (number, optional)
+•	Age in years (number, optional)
+•	Amenities (select any: Garden, Pool, RoofGarden, Security, Parking)
+•	Property Condition (New, Used, Remodeled)
+•	Rental Modality (ShortTerm, LongTerm, Temporary)
+•	Furnished (yes/no)
+•	Latitude (number, optional)
+•	Longitude (number, optional)
+Instructions:
+•	For fields with predefined options, present the choices clearly.
+•	For optional fields, clarify that the user can skip if they wish.
+•	After each answer, confirm the value and proceed to the next unanswered field.
+•	If the user provides multiple answers at once, extract and confirm each value.
+•	At the end, summarize all collected data and ask for confirmation or corrections.
+Example Start: Let's fill out your property listing. What type of property is it? (House, Apartment, Office, Commercial, Land)"
+);
 
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -126,7 +159,7 @@ Important, try to answer in the same language the user is asking.");
             }
 
             chatHistory.AddAssistantMessage(responseMessage.Content);
-
+            PreFilledData += $"\n{responseMessage.Content}";
         }
         catch (Exception ex)
         {
@@ -174,6 +207,12 @@ Important, try to answer in the same language the user is asking.");
         isLoading = false;
         StateHasChanged();
         await ScrollToBottom();
+    }
+
+    private void ShowForm()
+    {
+        FormIsVisible = true;
+        StateHasChanged();
     }
 
     private async Task ScrollToBottom()

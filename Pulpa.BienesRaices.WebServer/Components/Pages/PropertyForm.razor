@@ -1,0 +1,273 @@
+﻿@page "/property-form"
+@using Pulpa.BienesRaices.Domain.ViewModels
+@using System.ComponentModel.DataAnnotations
+
+@if (IsVisible)
+{
+    
+<div class="container py-4">
+    <h3 class="display-6 mb-4">Your next endevour!</h3>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>Error!</strong> @errorMessage
+            <button type="button" class="btn-close" @onclick="() => errorMessage = string.Empty" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card shadow">
+        <div class="card-body">
+            <EditForm Model="model" OnSubmit="HandleSubmit" Enhance>
+
+                <div class="row g-4">
+                    <!-- Property & Listing Type -->
+                    <div class="col-md-6">
+                        <label for="propertyType" class="form-label fw-semibold">Property Type</label>
+                        <select @bind="model.PropertyType" id="propertyType" class="form-select">
+                            @foreach (var type in Enum.GetValues(typeof(PropertyType)))
+                            {
+                                <option value="@type">@type</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="listingType" class="form-label fw-semibold">Listing Type</label>
+                        <select @bind="model.ListingType" id="listingType" class="form-select">
+                            @foreach (var type in Enum.GetValues(typeof(ListingType)))
+                            {
+                                <option value="@type">@type</option>
+                            }
+                        </select>
+                    </div>
+
+                    <!-- Location -->
+                    <div class="col-md-6">
+                        <label for="neighborhood" class="form-label fw-semibold">Neighborhood</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                            <InputText @bind-Value="model.Neighborhood" id="neighborhood" class="form-control"></InputText>
+                             
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="city" class="form-label fw-semibold">City</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-building"></i></span>
+                            <InputText @bind-Value="model.City" id="city" class="form-control"></InputText>
+                             
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="postalCode" class="form-label fw-semibold">Postal Code</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-mailbox"></i></span>
+                            <InputText type="text" @bind-Value="model.PostalCode" id="postalCode" class="form-control" />
+                        </div>
+                    </div>
+
+                    <!-- Property Details -->
+                    <div class="col-md-3">
+                        <label for="bedrooms" class="form-label fw-semibold">Bedrooms</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-door-closed"></i></span>
+                            <InputNumber TValue="int?"   min="0" @bind-Value="model.Bedrooms" id="bedrooms" class="form-control" />
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="bathrooms" class="form-label fw-semibold">Bathrooms</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-water"></i></span>
+                            <InputNumber TValue="int?" min="0" step="1" @bind-Value="model.Bathrooms" id="bathrooms" class="form-control" />
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="area" class="form-label fw-semibold">Area (m²)</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-rulers"></i></span>
+                            <InputNumber TValue="double?" @bind-Value="model.Area" id="area" class="form-control" />
+                            <span class="input-group-text">m²</span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="stories" class="form-label fw-semibold">Stories</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-layers"></i></span>
+                            <InputNumber TValue="int?" min="0" @bind-Value="model.Stories" id="stories" class="form-control" />
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="age" class="form-label fw-semibold">Age (years)</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-calendar3"></i></span>
+                            <InputNumber TValue="int?" min="0" @bind-Value="model.Age" id="age" class="form-control" />
+                        </div>
+                    </div>
+
+                    <!-- Property Condition & Features -->
+                    <div class="col-md-6">
+                        <label for="condition" class="form-label fw-semibold">Condition</label>
+                        <select @bind="model.Condition" id="condition" class="form-select">
+                            @foreach (var condition in Enum.GetValues(typeof(PropertyCondition)))
+                            {
+                                <option value="@condition">@condition</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="rentalModality" class="form-label fw-semibold">Rental Modality</label>
+                        <select @bind="model.RentalModality" id="rentalModality" class="form-select">
+                            @foreach (var modality in Enum.GetValues(typeof(RentalModality)))
+                            {
+                                <option value="@modality">@modality</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Amenities</label>
+                        <div class="row row-cols-2 row-cols-md-4 g-3">
+                            @foreach (Amenity amenity in Enum.GetValues(typeof(Amenity)))
+                            {
+                                @if (amenity != Amenity.None)
+                                {
+                                    <div class="col">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox"
+                                                   id="@amenity"
+                                                   checked="@(model.Amenities.HasFlag(amenity))"
+                                                   @onchange="@(e => ToggleAmenity(amenity, e.Value as bool? ?? false))" />
+                                            <label class="form-check-label" for="@amenity">@amenity</label>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="furnished" @bind="model.Furnished" />
+                            <label class="form-check-label fw-semibold" for="furnished">Furnished</label>
+                        </div>
+                    </div>
+
+                    <div class="row">
+
+                        <!-- GPS Coordinates -->
+                        <div class="col-md-6">
+                            <label for="latitude" class="form-label fw-semibold">Latitude</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-geo"></i></span>
+                                <InputNumber TValue="double?" @bind-Value="model.Latitude" id="latitude" class="form-control" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="longitude" class="form-label fw-semibold">Longitude</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-geo"></i></span>
+                                <InputNumber TValue="double?" @bind-Value="model.Longitude" id="longitude" class="form-control" />
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Submit Button -->
+                <div class="d-grid gap-2 col-md-6 mx-auto mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        @if (isLoading)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            <span>Sending...</span>
+                        }
+                        else
+                        {
+                            <span>Request Analysis</span>
+                        }
+                    </button>
+                </div>
+            </EditForm>
+
+        </div>
+    </div>
+</div>
+
+}
+
+
+@code {
+    private PropertyFormViewModel model = new PropertyFormViewModel();
+    private bool isLoading = false;
+    private string errorMessage = string.Empty;
+    private bool preFilled = false;
+
+    [Parameter]
+    public bool IsVisible { get; set; }
+
+    [Parameter]
+    public string PreFilledData { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Initialize the model or load data if necessary
+        await base.OnInitializedAsync();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+
+            preFilled = !string.IsNullOrEmpty(PreFilledData);
+        }
+    }
+
+    private void ToggleAmenity(Amenity amenity, bool isChecked)
+    {
+        if (isChecked)
+        {
+            model.Amenities |= amenity;
+        }
+        else
+        {
+            model.Amenities &= ~amenity;
+        }
+    }
+
+    private async Task HandleSubmit(EditContext editContext)
+    {
+        try
+        {
+            isLoading = true;
+            // Add your form submission logic here
+
+            // Example:
+            // await PropertyService.SavePropertyAsync(model);
+
+            var jsonData = System.Text.Json.JsonSerializer.Serialize((PropertyFormViewModel)editContext.Model);
+
+            //se podria enviar al agente el JSON
+
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error saving property: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+}
